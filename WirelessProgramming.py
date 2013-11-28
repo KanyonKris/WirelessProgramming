@@ -24,13 +24,15 @@ SERIALPORT = "COM101"  # the default com/serial port the receiver is connected t
 BAUDRATE = 115200      # default baud rate we talk to Moteino
 DEBUG = False
 HEX = "flash.hex"
+MOTEID = 10
 retries = 2
 
 # Read command line arguments
 if (sys.argv and len(sys.argv) > 1):
   if len(sys.argv)==2 and sys.argv[1] == "-h":
     print " -d               Set DEBUG=True"
-    print " -f               Set HEX file (Default: ", HEX, ")"
+    print " -f file          Set HEX file to upload (Default: ", HEX, ")"
+    print " -m ID            Set ID of Moteino to be programmed (Default: ", MOTEID, ")"
     print " -s SPort         Read from serial port SPort (Default: ", SERIALPORT, ")"
     print " -b Baud          Set serial port bit rate to Baud (Default: ", BAUDRATE, ")"
     print " -h               Print this message"
@@ -45,6 +47,8 @@ if (sys.argv and len(sys.argv) > 1):
       BAUD = sys.argv[i+1]
     if sys.argv[i] == "-f" and len(sys.argv) >= i+2:
       HEX = sys.argv[i+1]
+    if sys.argv[i] == "-m" and len(sys.argv) >= i+2:
+      MOTEID = sys.argv[i+1]
 
 # open up the FTDI serial port to get data transmitted to Moteino
 ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
@@ -100,6 +104,10 @@ if __name__ == "__main__":
       if waitForHandshake():
         seq = 0
         content = f.readlines()
+        # send ID of target Moteino
+        tx = "MID:" + MOTEID
+        print "TX > " tx
+        ser.write(tx + '\n')
 
         while seq < len(content):
           tx = "FLX:" + str(seq) + content[seq].strip()
