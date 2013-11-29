@@ -57,6 +57,21 @@ time.sleep(2) #wait for Moteino reset after port open and potential bootloader t
 def millis():
   return int(round(time.time() * 1000)) 
 
+def waitForMID-OK():
+  now = millis()
+  count = 0
+    while True:
+      if millis()-now < 5000:
+        count += 1
+        ser.flush()
+        rx = ser.readline().rstrip()
+        if len(rx) > 0:
+          print "Moteino: [" + rx + "]"
+          if rx == "MID?OK":
+            print "MID HANDSHAKE OK!"
+            return True
+      else: return False
+
 def waitForHandshake(isEOF=False):
   now = millis()
   count = 0
@@ -76,7 +91,6 @@ def waitForHandshake(isEOF=False):
           print "HANDSHAKE OK!"
           return True
     else: return False
-
 
 # return 0:timeout, 1:OK!, 2:match but out of synch
 def waitForSEQ(seq):
@@ -98,16 +112,22 @@ def waitForSEQ(seq):
 # MAIN()
 if __name__ == "__main__":
   try:
+    # send ID of target Moteino
+    tx = "MID:" + MOTEID
+    print "TX > " tx
+    ser.write(tx + '\n')
+    if waitForMID-OK():
+      print "MID OK acknowledged"
+    else:
+      print "No response from Moteino, exiting..."
+      exit(0);
+    
     with open(HEX) as f:
       print "File found, passing to Moteino..."
       
       if waitForHandshake():
         seq = 0
         content = f.readlines()
-        # send ID of target Moteino
-        tx = "MID:" + MOTEID
-        print "TX > " tx
-        ser.write(tx + '\n')
 
         while seq < len(content):
           tx = "FLX:" + str(seq) + content[seq].strip()
