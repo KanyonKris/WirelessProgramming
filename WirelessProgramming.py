@@ -57,7 +57,7 @@ time.sleep(2) #wait for Moteino reset after port open and potential bootloader t
 def millis():
   return int(round(time.time() * 1000)) 
 
-def waitForMID-OK():
+def waitForMIDok():
   now = millis()
   count = 0
     while True:
@@ -114,9 +114,9 @@ if __name__ == "__main__":
   try:
     # send ID of target Moteino
     tx = "MID:" + MOTEID
-    print "TX > " tx
+    print "TX > " + tx
     ser.write(tx + '\n')
-    if waitForMID-OK():
+    if waitForMIDok():
       print "MID OK acknowledged"
     else:
       print "No response from Moteino, exiting..."
