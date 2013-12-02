@@ -113,7 +113,7 @@ def waitForSEQ(seq):
 if __name__ == "__main__":
   try:
     # send ID of target Moteino
-    tx = "MID:" + MOTEID
+    tx = "MID:" + str(MOTEID)
     print "TX > " + tx
     ser.write(tx + '\n')
     if waitForMIDok():
