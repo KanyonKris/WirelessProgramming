@@ -51,7 +51,7 @@ if (sys.argv and len(sys.argv) > 1):
       MOTEID = sys.argv[i+1]
       if (MOTEID < 1) or (MOTEID > 255):
         print "ERROR: Target ID {", MOTEID, "} invalid, must be 1-255."
-        exit(1);
+        exit(1)
 
 # open up the FTDI serial port to get data transmitted to Moteino
 ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
@@ -121,10 +121,10 @@ if __name__ == "__main__":
     print "TX > " + tx
     ser.write(tx + '\n')
     if waitForMIDok():
-      print "MID OK acknowledged"
+      print "MID OK received"
     else:
       print "No response from gateway Moteino, exiting..."
-      exit(1);
+      exit(1)
     
     with open(HEX) as f:
       print "File found, passing to Moteino..."
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             result = waitForSEQ(seq)
           elif waitForHandshake(True):
             print "SUCCESS!"
-            exit(0);
+            exit(0)
 
           if result == 1: seq+=1
           elif result == 2: continue # out of synch, retry
@@ -154,14 +154,16 @@ if __name__ == "__main__":
               continue
             else:
               print "TIMEOUT, aborting..."
-              exit(1);
+              exit(1)
 
         while 1:
           rx = ser.readline()
           if (len(rx) > 0): print rx.strip()
-      else: print "No response from Moteino, exiting..."
+      else:
+        print "No response from Moteino, exiting..."
+        exit(1)
 
   except IOError:
     print "File ", HEX, " not found, exiting..."
-    exit(1);
+    exit(1)
     
