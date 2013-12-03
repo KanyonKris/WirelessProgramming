@@ -13,7 +13,7 @@
 # store it in external memory. Once received by the target (which is also loaded with a custom bootloader
 # capable of reading back that image) it will reset and reprogram itself with the new sketch
 #
-# EXAMPLE USAGE: WirelessProgramming.py -f FILE.hex -s COM100 -b 115200
+# EXAMPLE USAGE: WirelessProgramming.py -f FILE.hex -m 10 -s COM6 -b 115200
 
 import time, sys, serial
 import collections
@@ -30,12 +30,12 @@ retries = 2
 # Read command line arguments
 if (sys.argv and len(sys.argv) > 1):
   if len(sys.argv)==2 and sys.argv[1] == "-h":
-    print " -d               Set DEBUG=True"
-    print " -f file          Set HEX file to upload (Default: ", HEX, ")"
-    print " -m ID            Set ID of Moteino to be programmed (Default: ", MOTEID, ")"
-    print " -s SPort         Read from serial port SPort (Default: ", SERIALPORT, ")"
-    print " -b Baud          Set serial port bit rate to Baud (Default: ", BAUDRATE, ")"
-    print " -h               Print this message"
+    print " -d           Turn on debugging"
+    print " -f {file}    HEX file to upload (Default: ", HEX, ")"
+    print " -m {ID}      ID of target Moteino to be programmed (Default: ", MOTEID, ")"
+    print " -s {port}    Serial port (Default: ", SERIALPORT, ")"
+    print " -b {baud}    Baud rate of serial port (Default: ", BAUDRATE, ")"
+    print " -h           Print this message"
     exit(0)
     
   for i in range(len(sys.argv)):
@@ -49,6 +49,9 @@ if (sys.argv and len(sys.argv) > 1):
       HEX = sys.argv[i+1]
     if sys.argv[i] == "-m" and len(sys.argv) >= i+2:
       MOTEID = sys.argv[i+1]
+      if (MOTEID < 1) or (MOTEID > 255):
+        print "ERROR: Target ID {", MOTEID, "} invalid, must be 1-255."
+        exit(1);
 
 # open up the FTDI serial port to get data transmitted to Moteino
 ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
@@ -113,14 +116,15 @@ def waitForSEQ(seq):
 if __name__ == "__main__":
   try:
     # send ID of target Moteino
+    ser.flush()
     tx = "MID:" + str(MOTEID)
     print "TX > " + tx
     ser.write(tx + '\n')
     if waitForMIDok():
       print "MID OK acknowledged"
     else:
-      print "No response from Moteino, exiting..."
-      exit(0);
+      print "No response from gateway Moteino, exiting..."
+      exit(1);
     
     with open(HEX) as f:
       print "File found, passing to Moteino..."
@@ -150,7 +154,7 @@ if __name__ == "__main__":
               continue
             else:
               print "TIMEOUT, aborting..."
-              exit(0);
+              exit(1);
 
         while 1:
           rx = ser.readline()
@@ -159,3 +163,5 @@ if __name__ == "__main__":
 
   except IOError:
     print "File ", HEX, " not found, exiting..."
+    exit(1);
+    
